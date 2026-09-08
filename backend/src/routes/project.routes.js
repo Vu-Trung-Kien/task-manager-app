@@ -7,6 +7,8 @@ import {
   updateProject,
 } from '../controllers/project.controllers.js';
 import authMiddleware from '../middlewares/auth.middleware.js';
+import validate from '../middlewares/validate.middleware.js';
+import { createProjectSchema, updateProjectSchema } from '../validators/project.validator.js';
 
 const router = Router();
 
@@ -20,10 +22,10 @@ router.get('/', getProjects);
 router.get('/:id', getProjectById);
 
 // POST /api/projects — tạo project mới
-router.post('/', createProject);
+router.post('/', validate(createProjectSchema), createProject);
 
 // PUT /api/projects/:id — cập nhật project
-router.put('/:id', updateProject);
+router.put('/:id', validate(updateProjectSchema), updateProject);
 
 // DELETE /api/projects/:id — xóa project
 router.delete('/:id', deleteProject);

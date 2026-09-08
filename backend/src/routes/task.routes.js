@@ -1,12 +1,14 @@
 import { Router } from 'express';
 import {
-  getTasksByProject,
-  getTaskById,
   createTask,
-  updateTask,
   deleteTask,
+  getTaskById,
+  getTasksByProject,
+  updateTask
 } from '../controllers/task.controllers.js';
 import authMiddleware from '../middlewares/auth.middleware.js';
+import validate from '../middlewares/validate.middleware.js';
+import { createTaskSchema, updateTaskSchema } from '../validators/task.validator.js';
 
 const router = Router();
 
@@ -20,10 +22,10 @@ router.get('/', getTasksByProject);
 router.get('/:id', getTaskById);
 
 // POST /api/tasks — tạo task mới
-router.post('/', createTask);
+router.post('/', validate(createTaskSchema), createTask);
 
 // PUT /api/tasks/:id — cập nhật task (VD: đổi status)
-router.put('/:id', updateTask);
+router.put('/:id', validate(updateTaskSchema), updateTask);
 
 // DELETE /api/tasks/:id — xóa task
 router.delete('/:id', deleteTask);
