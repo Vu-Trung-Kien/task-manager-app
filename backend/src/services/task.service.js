@@ -1,4 +1,4 @@
-import prisma from '../prisma/db.js';
+import prisma from '../../prisma/db.js';
 
 // Lấy danh sách task theo project, kèm kiểm tra project thuộc về đúng user
 const getTasksByProject = async (projectId, userId) => {

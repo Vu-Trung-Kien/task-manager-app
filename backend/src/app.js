@@ -3,8 +3,9 @@ import express from 'express';
 import morgan from 'morgan';
 
 import authRoutes from './routes/auth.routes.js';
+import commentRoutes from './routes/comment.routes.js';
 import projectRoutes from './routes/project.routes.js';
-//import taskRoutes from './routes/task.routes.js';
+import taskRoutes from './routes/task.routes.js';
 
 import errorMiddleware from './middlewares/error.middleware.js';
 
@@ -29,7 +30,8 @@ app.get('/health', (req, res) => {
 // ============================================
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
-//app.use('/api/tasks', taskRoutes);
+app.use('/api/tasks', taskRoutes);
+app.use('/api/comment', commentRoutes);
 
 // ============================================
 // Xử lý route không tồn tại (404)
