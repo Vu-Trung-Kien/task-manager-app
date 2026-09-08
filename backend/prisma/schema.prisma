@@ -2,7 +2,7 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../src/generated/prisma"
 }
 
@@ -17,7 +17,7 @@ datasource db {
 model User {
   id        String    @id @default(uuid())
   email     String    @unique
-  password  String
+  hashPassword  String
   name      String
   projects  Project[] // User sở hữu nhiều Project
   createdAt DateTime  @default(now())
