@@ -1,11 +1,11 @@
 import { Router } from 'express';
 import {
-  getProjects,
-  getProjectById,
   createProject,
-  updateProject,
   deleteProject,
-} from '../controllers/project.controller.js';
+  getProjectById,
+  getProjects,
+  updateProject,
+} from '../controllers/project.controllers.js';
 import authMiddleware from '../middlewares/auth.middleware.js';
 
 const router = Router();

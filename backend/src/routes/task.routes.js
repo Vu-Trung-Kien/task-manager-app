@@ -5,7 +5,7 @@ import {
   createTask,
   updateTask,
   deleteTask,
-} from '../controllers/task.controller.js';
+} from '../controllers/task.controllers.js';
 import authMiddleware from '../middlewares/auth.middleware.js';
 
 const router = Router();
