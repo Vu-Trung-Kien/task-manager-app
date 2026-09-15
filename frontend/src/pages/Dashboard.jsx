@@ -55,7 +55,7 @@ const Dashboard = () => {
   const loadComments = async (taskId) => {
     if (!taskId) { setComments([]); return; }
     try {
-      const response = await api.get('/comment', { params: { taskId } }); setComments(response.data);
+      const response = await api.get('/comments', { params: { taskId } }); setComments(response.data);
     } catch (error) { showError(error, 'Không thể tải comment'); }
   };
 
@@ -111,12 +111,12 @@ const Dashboard = () => {
   const handleCreateComment = async (event) => {
     event.preventDefault(); if (!commentContent.trim()) return;
     try {
-      const response = await api.post('/comment', { content: commentContent.trim(), taskId: selectedTaskId }); setComments((current) => [...current, response.data]); setCommentContent('');
+      const response = await api.post('/comments', { content: commentContent.trim(), taskId: selectedTaskId }); setComments((current) => [...current, response.data]); setCommentContent('');
     } catch (error) { showError(error, 'Không thể tạo comment'); }
   };
 
   const handleDeleteComment = async (commentId) => {
-    try { await api.delete(`/comment/${commentId}`); setComments((current) => current.filter((comment) => comment.id !== commentId)); }
+    try { await api.delete(`/comments/${commentId}`); setComments((current) => current.filter((comment) => comment.id !== commentId)); }
     catch (error) { showError(error, 'Không thể xóa comment'); }
   };
 
