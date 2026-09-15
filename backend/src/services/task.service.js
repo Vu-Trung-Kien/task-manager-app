@@ -1,4 +1,14 @@
 import prisma from '../../prisma/db.js';
+import { getIO } from '../sockets/socket.js';
+
+const emitProjectTaskEvent = (projectId, eventName, payload) => {
+  try {
+    const io = getIO();
+    io.to(`project-${projectId}`).emit(eventName, payload);
+  } catch (error) {
+    // Socket.io có thể chưa khởi tạo ở một số test hoặc môi trường không chạy server
+  }
+};
 
 // Lấy danh sách task theo project, kèm kiểm tra project thuộc về đúng user
 const getTasksByProject = async (projectId, userId) => {
@@ -49,9 +59,13 @@ const createTask = async ({ title, description, projectId }, userId) => {
     throw error;
   }
 
-  return prisma.task.create({
+  const createdTask = await prisma.task.create({
     data: { title, description, projectId },
   });
+
+  emitProjectTaskEvent(projectId, 'task:created', createdTask);
+
+  return createdTask;
 };
 
 const updateTask = async (taskId, data, userId) => {
@@ -66,10 +80,14 @@ const updateTask = async (taskId, data, userId) => {
     throw error;
   }
 
-  return prisma.task.update({
+  const updatedTask = await prisma.task.update({
     where: { id: taskId },
     data,
   });
+
+  emitProjectTaskEvent(existingTask.projectId, 'task:updated', updatedTask);
+
+  return updatedTask;
 };
 
 const deleteTask = async (taskId, userId) => {
@@ -83,7 +101,15 @@ const deleteTask = async (taskId, userId) => {
     throw error;
   }
 
-  return prisma.task.delete({ where: { id: taskId } });
+  const deletedTask = await prisma.task.delete({ where: { id: taskId } });
+
+  emitProjectTaskEvent(existingTask.projectId, 'task:deleted', {
+    id: deletedTask.id,
+    projectId: deletedTask.projectId,
+    deletedAt: new Date().toISOString(),
+  });
+
+  return deletedTask;
 };
 
 export default {

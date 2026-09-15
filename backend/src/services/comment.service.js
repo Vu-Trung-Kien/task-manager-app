@@ -1,4 +1,16 @@
 import prisma from '../../prisma/db.js';
+import { getIO } from '../sockets/socket.js';
+
+const emitProjectCommentEvent = (projectId, eventName, payload) => {
+  try {
+    const io = getIO();
+    if (projectId) {
+      io.to(`project-${projectId}`).emit(eventName, payload);
+    }
+  } catch (error) {
+    // Socket.io chưa khởi tạo trong môi trường test
+  }
+};
 
 // Kiểm tra task có thuộc về user hiện tại không (qua project.ownerId)
 const checkTaskOwnership = async (taskId, userId) => {
@@ -33,11 +45,19 @@ const createComment = async ({ content, taskId }, userId) => {
     throw error;
   }
 
-  await checkTaskOwnership(taskId, userId);
+  const task = await checkTaskOwnership(taskId, userId);
 
-  return prisma.comment.create({
+  const createdComment = await prisma.comment.create({
     data: { content, taskId },
   });
+
+  emitProjectCommentEvent(task.projectId, 'comment:created', {
+    ...createdComment,
+    taskId,
+    projectId: task.projectId,
+  });
+
+  return createdComment;
 };
 
 // Xóa comment — kiểm tra comment đó thuộc task của đúng user
@@ -47,6 +67,7 @@ const deleteComment = async (commentId, userId) => {
       id: commentId,
       task: { project: { ownerId: userId } },
     },
+    include: { task: true },
   });
 
   if (!comment) {
@@ -55,7 +76,16 @@ const deleteComment = async (commentId, userId) => {
     throw error;
   }
 
-  return prisma.comment.delete({ where: { id: commentId } });
+  const deletedComment = await prisma.comment.delete({ where: { id: commentId } });
+
+  emitProjectCommentEvent(comment.task.projectId, 'comment:deleted', {
+    id: deletedComment.id,
+    taskId: deletedComment.taskId,
+    projectId: comment.task.projectId,
+    deletedAt: new Date().toISOString(),
+  });
+
+  return deletedComment;
 };
 
 export default {

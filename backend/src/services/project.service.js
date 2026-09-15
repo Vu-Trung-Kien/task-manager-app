@@ -1,4 +1,16 @@
 import prisma from '../../prisma/db.js';
+import { getIO } from '../sockets/socket.js';
+
+const emitProjectEvent = (projectId, eventName, payload) => {
+  try {
+    const io = getIO();
+    if (projectId) {
+      io.to(`project-${projectId}`).emit(eventName, payload);
+    }
+  } catch (error) {
+    // Socket.io chưa khởi tạo trong môi trường test
+  }
+};
 
 // Lấy danh sách project của user hiện tại
 const getProjects = async (userId) => {
@@ -32,9 +44,13 @@ const createProject = async ({ name }, userId) => {
     throw error;
   }
 
-  return prisma.project.create({
+  const createdProject = await prisma.project.create({
     data: { name, ownerId: userId },
   });
+
+  emitProjectEvent(createdProject.id, 'project:created', createdProject);
+
+  return createdProject;
 };
 
 // Cập nhật project — chỉ owner mới được sửa
@@ -49,10 +65,14 @@ const updateProject = async (projectId, data, userId) => {
     throw error;
   }
 
-  return prisma.project.update({
+  const updatedProject = await prisma.project.update({
     where: { id: projectId },
     data: { name: data.name },
   });
+
+  emitProjectEvent(projectId, 'project:updated', updatedProject);
+
+  return updatedProject;
 };
 
 // Xóa project — chỉ owner mới được xóa (task/comment bên trong tự xóa theo nhờ onDelete: Cascade)
@@ -67,7 +87,14 @@ const deleteProject = async (projectId, userId) => {
     throw error;
   }
 
-  return prisma.project.delete({ where: { id: projectId } });
+  const deletedProject = await prisma.project.delete({ where: { id: projectId } });
+
+  emitProjectEvent(projectId, 'project:deleted', {
+    id: deletedProject.id,
+    deletedAt: new Date().toISOString(),
+  });
+
+  return deletedProject;
 };
 
 export default {
