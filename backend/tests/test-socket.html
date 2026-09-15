@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Test Socket.io</title>
+  <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+</head>
+
+<body>
+  <h2>Test Socket.io — Mở console (F12) để xem log</h2>
+  <input id="projectId" placeholder="Nhập projectId cần theo dõi" style="width: 300px" />
+  <button onclick="joinRoom()">Join Room</button>
+
+  <script>
+    const socket = io('http://localhost:3000'); // đổi port khớp với server của bạn
+
+    socket.on('connect', () => {
+      console.log('✅ Connected:', socket.id);
+    });
+
+    socket.on('task:created', (task) => {
+      console.log('🆕 Task created:', task);
+    });
+
+    socket.on('task:updated', (task) => {
+      console.log('✏️ Task updated:', task);
+    });
+
+    socket.on('task:deleted', (data) => {
+      console.log('🗑️ Task deleted:', data);
+    });
+
+    function joinRoom() {
+      const projectId = document.getElementById('projectId').value;
+      socket.emit('joinProject', projectId);
+      console.log('Joined room:', projectId);
+    }
+  </script>
+</body>
+
+</html>
